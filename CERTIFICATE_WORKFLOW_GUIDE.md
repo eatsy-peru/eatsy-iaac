@@ -92,11 +92,12 @@ az storage blob upload \
 
 | Input | Example | Description |
 |-------|---------|-------------|
-| **Environment** | `dev`, `prd`, `staging` | Target Azure environment |
+| **Environment** | `dev`, `prd` | Target Azure environment |
 | **Secret Prefix** | `myapp-ssl-cert` | Prefix for all secret names |
 | **PEM Blob Name** | `myapp/cert.pem` | Path within `certs` container |
 | **Key Blob Name** | `myapp/key.key` | Path within `certs` container |
 | **PFX Password** | (your password) | Password to protect the PFX file |
+| **Delete Certificate Files** | `true` (default) | Automatically delete the PEM and KEY files from blob storage after processing |
 
 ### Step 3: Verify Secrets
 
@@ -136,7 +137,12 @@ After the workflow completes successfully:
    - Uses the `KEY_VAULT_NAME` secret to reference the correct Key Vault
    - Creates four secrets with the specified prefix
 
-### 7. **Cleanup**
+### 7. **Delete Certificate Files from Blob Storage** (optional, enabled by default)
+   - If "Delete Certificate Files" is checked (enabled by default), removes the PEM and KEY files from the `certs` blob container
+   - This ensures the original files don't remain in storage after being processed
+   - Useful for security — you can re-upload new files for the next certificate creation without managing old ones
+
+### 8. **Cleanup**
    - Deletes all temporary files from the runner (PEM, KEY, PFX)
    - Clears sensitive environment variables
 
@@ -210,13 +216,20 @@ echo "$PEM_B64" | base64 -d > certificate.pem
 - Verify the GitHub service principal has "Key Vault Secrets Officer" role on the Key Vault
 - Check that Key Vault RBAC authorization is enabled (not Access Policies)
 
+### Blob files not deleted despite "Delete Certificate Files" being enabled
+- Verify the GitHub service principal has "Storage Blob Data Contributor" role (it already needs this to download files)
+- The workflow will not fail if deletion fails — check the logs for "⚠ file deletion skipped" messages
+- Files may have been deleted already, or they may not exist at the specified blob path
+- To manually delete: `az storage blob delete --account-name "<storage>" --container-name "certs" --name "<blob-name>"`
+
 ## Security Considerations
 
 ✅ **Best Practices Implemented:**
 - Uses OIDC federated credentials (no long-lived secrets)
-- Sensitive files cleaned up after use
+- Sensitive files cleaned up after use (local runner files)
 - Passwords masked in GitHub Actions logs
 - RBAC-based access control via Azure
+- **Certificate files auto-deleted from blob storage** (enabled by default) — prevents accumulation of old certificate files
 
 🔐 **Additional Recommendations:**
 - Store certificate files in a private repository or use separate storage
