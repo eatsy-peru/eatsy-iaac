@@ -16,13 +16,6 @@ github_repository_names = [
 
 github_oidc_environments = ["dev"]
 
-# Deployment resource group IDs - used to grant Reader role
-# Format: /subscriptions/{subscription-id}/resourceGroups/{resource-group-name}
-deployment_resource_group_ids = [
-  # Example:
-  # "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/RGE01EU2DEV"
-]
-
 /*
 cd infra/bootstrap/dev
 

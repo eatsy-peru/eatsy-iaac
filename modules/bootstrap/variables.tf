@@ -33,11 +33,6 @@ variable "github_oidc_environments" {
   type        = list(string)
 }
 
-variable "deployment_resource_group_ids" {
-  description = "List of resource group IDs where the identity needs Reader role"
-  type        = list(string)
-}
-
 ###################################################
 # LOCALS
 ###################################################

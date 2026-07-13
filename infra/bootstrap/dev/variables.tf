@@ -33,11 +33,6 @@ variable "github_repository_names" {
   type        = list(string)
 }
 
-variable "deployment_resource_group_ids" {
-  description = "Resource group IDs for deployment subscriptions"
-  type        = list(string)
-}
-
 variable "github_oidc_environments" {
   description = "Environments for GitHub OIDC federated credentials"
   type        = list(string)

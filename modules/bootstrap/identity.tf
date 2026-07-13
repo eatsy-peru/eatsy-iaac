@@ -57,9 +57,7 @@ resource "azuread_application_federated_identity_credential" "github_repo_env" {
 
 # Grant Reader role on each deployment resource group
 resource "azurerm_role_assignment" "deployment_rg_reader" {
-  for_each = toset(var.deployment_resource_group_ids)
-
-  scope                = each.value
+  scope                = azurerm_resource_group.main_rg.id
   role_definition_name = "Reader"
   principal_id         = azuread_service_principal.github_oidc.object_id
 }
@@ -68,6 +66,13 @@ resource "azurerm_role_assignment" "deployment_rg_reader" {
 resource "azurerm_role_assignment" "keyvault_secrets_user" {
   scope                = azurerm_key_vault.iaac.id
   role_definition_name = "Key Vault Secrets User"
+  principal_id         = azuread_service_principal.github_oidc.object_id
+}
+
+# Grant Key Vault Secrets Officer on the IAAC Key Vault
+resource "azurerm_role_assignment" "keyvault_secrets_officer" {
+  scope                = azurerm_key_vault.iaac.id
+  role_definition_name = "Key Vault Secrets Officer"
   principal_id         = azuread_service_principal.github_oidc.object_id
 }
 
@@ -82,6 +87,13 @@ resource "azurerm_role_assignment" "storage_blob_contributor" {
 resource "azurerm_role_assignment" "keyvault_secrets_user_current_user" {
   scope                = azurerm_key_vault.iaac.id
   role_definition_name = "Key Vault Secrets User"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# Grant Key Vault Secrets Officer to the current user (bootstrap operator)
+resource "azurerm_role_assignment" "keyvault_secrets_officer_current_user" {
+  scope                = azurerm_key_vault.iaac.id
+  role_definition_name = "Key Vault Secrets Officer"
   principal_id         = data.azurerm_client_config.current.object_id
 }
 

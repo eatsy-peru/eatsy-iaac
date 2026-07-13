@@ -54,14 +54,6 @@ github_repository_names = [
   # Add others as needed
 ]
 
-# Get these IDs from your deployment subscription's RGs
-# Format: /subscriptions/{sub-id}/resourceGroups/{rg-name}
-deployment_resource_group_ids = [
-  "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/RGE01EU2DEV",
-  # Add each deployment RG that the identity needs access to
-]
-```
-
 Find subscription and resource group IDs:
 
 ```powershell
@@ -111,12 +103,6 @@ github_repository_names = [
   "eatsy-back-java-monolith",
 ]
 
-# Production deployment RG IDs
-deployment_resource_group_ids = [
-  "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/RGE01EU2PRD",
-]
-```
-
 ## Step 4: Deploy Production
 
 ```powershell
@@ -147,29 +133,30 @@ az ad sp list --display-name "SVPR01EU2DEV-GitHub"
 
 ## GitHub Actions Setup
 
-After bootstrap is complete:
+GitHub Actions secrets are **automatically configured** by Terraform when you deploy the bootstrap:
 
-1. **Get the client ID and tenant ID from outputs**:
-   ```powershell
-   cd infra/bootstrap/dev
-   terraform output app_registration_client_id
-   terraform output -json  # See all outputs
-   ```
+**Automated secrets created per environment:**
 
-2. **Add GitHub Secrets** (in your eatsy-azure-terraform repo):
-   - `AZURE_CLIENT_ID` = app_registration_client_id
-   - `AZURE_TENANT_ID` = your tenant ID (from `az account show --query tenantId`)
-   - `AZURE_SUBSCRIPTION_ID` = your subscription ID
+On **both `eatsy-iaac` and `eatsy-azure-terraform` repos**:
+- `AZURE_CLIENT_ID` — bootstrap service principal client ID
+- `AZURE_TENANT_ID` — Azure tenant ID
+- `AZURE_SUBSCRIPTION_ID` — deployment subscription ID
 
-3. **Use in GitHub Actions**:
-   ```yaml
-   - name: Azure Login
-     uses: azure/login@v1
-     with:
-       client-id: ${{ secrets.AZURE_CLIENT_ID }}
-       tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-       subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-   ```
+On **`eatsy-iaac` repo only** (bootstrap-specific):
+- `KEY_VAULT_NAME` — bootstrap Key Vault name for secret storage
+- `CERTS_STORAGE_ACCOUNT_NAME` — storage account name for certificate management
+
+These are created as **environment secrets** (scoped to `dev` or `prd` environment) by the `github_actions_environment_secret` resources in `modules/bootstrap/github_secrets.tf`. No manual steps required after `terraform apply`!
+
+**Use in GitHub Actions**:
+```yaml
+- name: Azure Login
+  uses: azure/login@v2
+  with:
+    client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+    subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+```
 
 ## Understanding the IAM Roles
 

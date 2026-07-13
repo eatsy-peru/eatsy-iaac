@@ -4,14 +4,6 @@ output "app_registration_display_name" {
   value       = azuread_application.github_oidc.display_name
 }
 
-output "deployment_rg_role_assignments" {
-  description = "Map of Reader role assignments on deployment resource groups"
-  value = {
-    for key, assignment in azurerm_role_assignment.deployment_rg_reader :
-    key => assignment.id
-  }
-}
-
 # Storage Account Outputs
 output "storage_account_id" {
   description = "The ID of the Storage Account"
@@ -26,6 +18,11 @@ output "storage_account_name" {
 output "storage_account_primary_blob_endpoint" {
   description = "The primary blob endpoint of the Storage Account"
   value       = azurerm_storage_account.tfstate.primary_blob_endpoint
+}
+
+output "certs_container_name" {
+  description = "The name of the certificates storage container"
+  value       = azurerm_storage_container.certs.name
 }
 
 # Keyvault Outputs

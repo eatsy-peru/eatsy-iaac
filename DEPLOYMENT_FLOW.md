@@ -159,13 +159,17 @@ This document explains how the eatsy-iaac bootstrap integrates with the eatsy-az
 
 ## GitHub Secrets Configuration
 
-In the **eatsy-azure-terraform** repo, set these GitHub Secrets:
+GitHub Actions secrets are **automatically managed by Terraform**. When you deploy the bootstrap in `eatsy-iaac`, the `github_actions_environment_secret` resources automatically create these secrets, scoped to the appropriate environment (`dev` or `prd`):
 
-| Secret | Source | How to Get |
-|--------|--------|-----------|
-| `AZURE_CLIENT_ID` | bootstrap outputs | `terraform output app_registration_client_id` |
-| `AZURE_TENANT_ID` | your Azure account | `az account show --query tenantId -o tsv` |
-| `AZURE_SUBSCRIPTION_ID` | deployment subscription | `az account show --query id -o tsv` |
+| Secret | Repositories | Managed By | Purpose |
+|--------|-------------|-----------|---------|
+| `AZURE_CLIENT_ID` | eatsy-iaac, eatsy-azure-terraform | `modules/bootstrap/github_secrets.tf` | OIDC login for both repos |
+| `AZURE_TENANT_ID` | eatsy-iaac, eatsy-azure-terraform | `modules/bootstrap/github_secrets.tf` | OIDC login for both repos |
+| `AZURE_SUBSCRIPTION_ID` | eatsy-iaac, eatsy-azure-terraform | `modules/bootstrap/github_secrets.tf` | OIDC login for both repos |
+| `KEY_VAULT_NAME` | **eatsy-iaac only** | `modules/bootstrap/github_secrets.tf` | Bootstrap Key Vault access |
+| `CERTS_STORAGE_ACCOUNT_NAME` | **eatsy-iaac only** | `modules/bootstrap/github_secrets.tf` | Certificate blob storage access |
+
+**No manual setup required** — just run `terraform apply` in the bootstrap stack and the secrets are pushed automatically.
 
 ## Example GitHub Actions Workflow
 

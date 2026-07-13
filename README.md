@@ -104,7 +104,6 @@ terraform apply
 - `location_short`: Region short code (e.g., "eus2")
 - `github_owner`: GitHub organization (e.g., "eatsy-peru")
 - `github_repository_names`: List of repositories needing federated credentials
-- `deployment_resource_group_ids`: Resource group IDs for Reader role assignment
 
 ## Outputs
 
