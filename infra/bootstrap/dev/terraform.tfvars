@@ -14,7 +14,7 @@ github_repository_names = [
   # Add other repositories that need federated credentials
 ]
 
-github_oidc_environments = ["dev", "prd"]
+github_oidc_environments = ["dev"]
 
 # Deployment resource group IDs - used to grant Reader role
 # Format: /subscriptions/{subscription-id}/resourceGroups/{resource-group-name}

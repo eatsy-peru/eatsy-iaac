@@ -31,7 +31,6 @@ variable "github_repository_names" {
 variable "github_oidc_environments" {
   description = "List of environments to create federated credentials for"
   type        = list(string)
-  default     = ["dev", "prd"]
 }
 
 variable "deployment_resource_group_ids" {

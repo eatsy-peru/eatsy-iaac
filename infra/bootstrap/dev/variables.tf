@@ -41,5 +41,4 @@ variable "deployment_resource_group_ids" {
 variable "github_oidc_environments" {
   description = "Environments for GitHub OIDC federated credentials"
   type        = list(string)
-  default     = ["dev", "prd"]
 }
