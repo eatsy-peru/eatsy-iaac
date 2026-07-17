@@ -122,9 +122,9 @@ The federated credentials created by this configuration allow GitHub Actions to 
 - name: Azure Login
   uses: azure/login@v1
   with:
-    client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    client-id: ${{ secrets.AZURE_IAAC_CLIENT_ID }}
     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-    subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    subscription-id: ${{ secrets.AZURE_IAAC_SUBSCRIPTION_ID }}
 ```
 
 The service principal automatically gets these roles:

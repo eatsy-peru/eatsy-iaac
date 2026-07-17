@@ -33,6 +33,11 @@ variable "github_oidc_environments" {
   type        = list(string)
 }
 
+variable "deployment_subscription_id" {
+  description = "Subscription ID where eatsy-azure-terraform's actual infrastructure (Container Apps, Static Web Apps, etc.) is deployed (Subscription B) — the GitHub OIDC identity needs RBAC here in addition to the IAAC subscription"
+  type        = string
+}
+
 ###################################################
 # LOCALS
 ###################################################

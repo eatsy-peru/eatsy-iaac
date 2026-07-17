@@ -18,7 +18,7 @@ variable "location_short" {
   type        = string
 }
 
-variable "subscription_id" {
+variable "iaac_subscription_id" {
   description = "Azure subscription ID"
   type        = string
 }
@@ -36,4 +36,9 @@ variable "github_repository_names" {
 variable "github_oidc_environments" {
   description = "Environments for GitHub OIDC federated credentials"
   type        = list(string)
+}
+
+variable "deployment_subscription_id" {
+  description = "Subscription ID where eatsy-azure-terraform's actual infrastructure is deployed (Subscription B)"
+  type        = string
 }

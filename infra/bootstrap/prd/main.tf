@@ -8,12 +8,19 @@
 module "bootstrap" {
   source = "../../../modules/bootstrap"
 
-  app_code                        = var.app_code
-  environment                     = var.environment
-  location                        = var.location
-  location_short                  = var.location_short
-  github_owner                    = var.github_owner
-  github_repository_names         = var.github_repository_names
-  github_oidc_environments        = var.github_oidc_environments
+  app_code                   = var.app_code
+  environment                = var.environment
+  location                   = var.location
+  location_short             = var.location_short
+  github_owner               = var.github_owner
+  github_repository_names    = var.github_repository_names
+  github_oidc_environments   = var.github_oidc_environments
+  deployment_subscription_id = var.deployment_subscription_id
 
+  providers = {
+    azurerm            = azurerm
+    azurerm.deployment = azurerm.deployment
+    azuread            = azuread
+    github             = github
+  }
 }

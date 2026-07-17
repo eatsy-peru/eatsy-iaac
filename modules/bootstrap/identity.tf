@@ -97,3 +97,46 @@ resource "azurerm_role_assignment" "keyvault_secrets_officer_current_user" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
+# Grant Contributor on the deployment subscription (Subscription B) — this is where
+# eatsy-azure-terraform's actual infrastructure (backend/frontend resource groups,
+# Container Apps, Static Web Apps, ACS, etc.) is created by module.core/module.cf/
+# module.gh. Subscription scope is required because the very first `terraform apply`
+# for eatsy-azure-terraform has to create those resource groups itself, which is a
+# subscription-level operation — there's nothing narrower to scope this to yet.
+resource "azurerm_role_assignment" "deployment_subscription_contributor" {
+  provider             = azurerm.deployment
+  scope                = "/subscriptions/${var.deployment_subscription_id}"
+  role_definition_name = "Contributor"
+  principal_id         = azuread_service_principal.github_oidc.object_id
+}
+
+# Contributor alone is not enough: eatsy-azure-terraform's own Terraform code creates
+# several azurerm_role_assignment resources at apply time (modules/core/keyvault.tf
+# grants itself Key Vault Administrator on the app Key Vault; container_apps.tf and
+# image_storage.tf grant the Container App's managed identity Key Vault/Storage
+# access; ad_service_principal.tf grants Contributor/Key-Vault-access to the
+# app-repo service principal it creates). Creating role assignments requires
+# Microsoft.Authorization/roleAssignments/write, which Contributor deliberately
+# excludes — User Access Administrator adds it.
+resource "azurerm_role_assignment" "deployment_subscription_user_access_administrator" {
+  provider             = azurerm.deployment
+  scope                = "/subscriptions/${var.deployment_subscription_id}"
+  role_definition_name = "User Access Administrator"
+  principal_id         = azuread_service_principal.github_oidc.object_id
+}
+
+# eatsy-azure-terraform's modules/core/ad_service_principal.tf has this identity
+# create its own Azure AD application/service principal/federated credentials (used
+# for app-repo deploys) — a Microsoft Graph directory action that subscription RBAC
+# does not grant. Application Administrator is broader than strictly necessary
+# (tenant-wide app management, not just apps this SP owns); narrowing to a scoped
+# Application.ReadWrite.OwnedBy Graph API permission is a possible future hardening.
+resource "azuread_directory_role" "application_administrator" {
+  display_name = "Application Administrator"
+}
+
+resource "azuread_directory_role_assignment" "github_oidc_app_admin" {
+  role_id             = azuread_directory_role.application_administrator.object_id
+  principal_object_id = azuread_service_principal.github_oidc.object_id
+}
+

@@ -2,17 +2,21 @@
  * GITHUB SECRETS CONFIGURATION - BOOTSTRAP MODULE
  * ===============================================
  * This file pushes the bootstrap service principal credentials
- * as GitHub Actions environment secrets to target repositories.
+ * to target repositories.
  *
- * Two types of secrets:
- * 1. SHARED SECRETS (pushed to all repos in github_oidc_credentials)
- *    - AZURE_TENANT_ID
- *    - AZURE_SUBSCRIPTION_ID
- *    - AZURE_CLIENT_ID
+ * Three types of secrets:
+ * 1. GLOBAL SECRETS (repository secrets, not tied to an environment,
+ *    pushed to every repo in github_repository_names)
+ *    - AZURE_TENANT_ID       (same Azure AD tenant for dev and prd)
+ *    - AZURE_IAAC_SUBSCRIPTION_ID (same subscription for dev and prd)
  *
- * 2. BOOTSTRAP-ONLY SECRETS (pushed only to eatsy-iaac repo)
- *    - KEY_VAULT_NAME (for bootstrap KV access)
- *    - CERTS_STORAGE_ACCOUNT_NAME (for certificate blob storage)
+ * 2. PER-ENVIRONMENT SECRETS (differs between dev and prd, since each
+ *    environment has its own app registration/service principal)
+ *    - AZURE_IAAC_CLIENT_ID
+ *
+ * 3. BOOTSTRAP-ONLY SECRETS (pushed only to eatsy-iaac repo)
+ *    - IAAC_KEY_VAULT_NAME (for bootstrap KV access)
+ *    - IAAC_CERTS_STORAGE_ACCOUNT_NAME (for certificate blob storage)
  */
 
 locals {
@@ -31,33 +35,36 @@ resource "github_repository_environment" "bootstrap_repo_env" {
 }
 
 #################################################
-# SHARED SECRETS (pushed to all target repos)
+# GLOBAL SECRETS (repository secrets, pushed to all target repos,
+# not scoped to a specific environment)
 #################################################
 
-# Push Azure Tenant ID as environment secret
-resource "github_actions_environment_secret" "azure_tenant_id" {
-  for_each    = github_repository_environment.bootstrap_repo_env
-  repository  = each.value.repository
-  environment = each.value.environment
+# Push Azure Tenant ID as a repository secret (same tenant for dev and prd)
+resource "github_actions_secret" "azure_tenant_id" {
+  for_each    = toset(var.github_repository_names)
+  repository  = each.value
   secret_name = "AZURE_TENANT_ID"
   value       = data.azurerm_client_config.current.tenant_id
 }
 
-# Push Azure Subscription ID as environment secret
-resource "github_actions_environment_secret" "azure_subscription_id" {
-  for_each    = github_repository_environment.bootstrap_repo_env
-  repository  = each.value.repository
-  environment = each.value.environment
-  secret_name = "AZURE_SUBSCRIPTION_ID"
+# Push Azure Subscription ID as a repository secret (same subscription for dev and prd)
+resource "github_actions_secret" "azure_subscription_id" {
+  for_each    = toset(var.github_repository_names)
+  repository  = each.value
+  secret_name = "AZURE_IAAC_SUBSCRIPTION_ID"
   value       = data.azurerm_client_config.current.subscription_id
 }
+
+#################################################
+# PER-ENVIRONMENT SECRETS (differs between dev and prd)
+#################################################
 
 # Push Azure Client ID as environment secret
 resource "github_actions_environment_secret" "azure_client_id" {
   for_each    = github_repository_environment.bootstrap_repo_env
   repository  = each.value.repository
   environment = each.value.environment
-  secret_name = "AZURE_CLIENT_ID"
+  secret_name = "AZURE_IAAC_CLIENT_ID"
   value       = azuread_application.github_oidc.client_id
 }
 
@@ -70,7 +77,7 @@ resource "github_actions_environment_secret" "key_vault_name" {
   for_each    = local.iaac_repo_environments
   repository  = each.value.repository
   environment = each.value.environment
-  secret_name = "KEY_VAULT_NAME"
+  secret_name = "IAAC_KEY_VAULT_NAME"
   value       = azurerm_key_vault.iaac.name
 }
 
@@ -79,6 +86,6 @@ resource "github_actions_environment_secret" "certs_storage_account_name" {
   for_each    = local.iaac_repo_environments
   repository  = each.value.repository
   environment = each.value.environment
-  secret_name = "CERTS_STORAGE_ACCOUNT_NAME"
+  secret_name = "IAAC_CERTS_STORAGE_ACCOUNT_NAME"
   value       = azurerm_storage_account.tfstate.name
 }

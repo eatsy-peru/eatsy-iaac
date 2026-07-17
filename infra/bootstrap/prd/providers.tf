@@ -35,12 +35,21 @@ terraform {
 # Azure Resource Manager provider configuration
 provider "azurerm" {
   features {}
-  subscription_id = var.subscription_id
+  subscription_id = var.iaac_subscription_id
+}
+
+# Aliased configuration for the deployment subscription (Subscription B) — used only
+# to grant the GitHub OIDC identity Contributor there, since eatsy-azure-terraform's
+# actual infrastructure lives in that subscription, not the IAAC one.
+provider "azurerm" {
+  alias = "deployment"
+  features {}
+  subscription_id = var.deployment_subscription_id
 }
 
 # Azure Active Directory provider configuration
 provider "azuread" {
-  
+
 }
 
 # Auth via env vars:

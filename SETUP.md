@@ -135,27 +135,29 @@ az ad sp list --display-name "SVPR01EU2DEV-GitHub"
 
 GitHub Actions secrets are **automatically configured** by Terraform when you deploy the bootstrap:
 
-**Automated secrets created per environment:**
+**Automated secrets:**
 
-On **both `eatsy-iaac` and `eatsy-azure-terraform` repos**:
-- `AZURE_CLIENT_ID` — bootstrap service principal client ID
+On **both `eatsy-iaac` and `eatsy-azure-terraform` repos** (repository secrets — same tenant/subscription for dev and prd, not scoped to an environment):
 - `AZURE_TENANT_ID` — Azure tenant ID
-- `AZURE_SUBSCRIPTION_ID` — deployment subscription ID
+- `AZURE_IAAC_SUBSCRIPTION_ID` — deployment subscription ID
 
-On **`eatsy-iaac` repo only** (bootstrap-specific):
-- `KEY_VAULT_NAME` — bootstrap Key Vault name for secret storage
-- `CERTS_STORAGE_ACCOUNT_NAME` — storage account name for certificate management
+On **both `eatsy-iaac` and `eatsy-azure-terraform` repos** (environment secret, scoped to `dev` or `prd` — differs per environment since each has its own service principal):
+- `AZURE_IAAC_CLIENT_ID` — bootstrap service principal client ID
 
-These are created as **environment secrets** (scoped to `dev` or `prd` environment) by the `github_actions_environment_secret` resources in `modules/bootstrap/github_secrets.tf`. No manual steps required after `terraform apply`!
+On **`eatsy-iaac` repo only** (bootstrap-specific, environment secrets):
+- `IAAC_KEY_VAULT_NAME` — bootstrap Key Vault name for secret storage
+- `IAAC_CERTS_STORAGE_ACCOUNT_NAME` — storage account name for certificate management
+
+These are created by the `github_actions_secret` and `github_actions_environment_secret` resources in `modules/bootstrap/github_secrets.tf`. No manual steps required after `terraform apply`!
 
 **Use in GitHub Actions**:
 ```yaml
 - name: Azure Login
   uses: azure/login@v2
   with:
-    client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    client-id: ${{ secrets.AZURE_IAAC_CLIENT_ID }}
     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-    subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    subscription-id: ${{ secrets.AZURE_IAAC_SUBSCRIPTION_ID }}
 ```
 
 ## Understanding the IAM Roles
