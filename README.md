@@ -155,7 +155,7 @@ Order of operations:
 1. Apply `infra/bootstrap/prd` with the IDs empty. This creates the Static Web App and the repo secret.
 2. Create and install the GitHub App (`eatsy-deployment-control-plane/docs/setup.md`, steps 2-4).
 3. Put the App ID, installation ID and your GitHub login in `prd/terraform.tfvars` and apply again. Do not put them in `common.tfvars`: it is passed with `--var-file`, which overrides `terraform.tfvars`.
-4. Set `GITHUB_APP_PRIVATE_KEY` with `az staticwebapp appsettings set` (setup.md step 8). The key is deliberately not in Terraform or its state; `ignore_changes` stops Terraform from removing it.
+4. Store the App private key in this Key Vault as `github-app-private-key` with the `create-file-secret.yml` workflow (setup.md step 7), then copy it into the `GITHUB_APP_PRIVATE_KEY` app setting with `az staticwebapp appsettings set` (setup.md step 8). The key is deliberately not in Terraform or its state; `ignore_changes` stops Terraform from removing it.
 
 The GitHub provider token (`GITHUB_TOKEN`) used for the bootstrap needs admin access to the
 control plane repo, like it does for the other repos receiving secrets. The Static Web App
