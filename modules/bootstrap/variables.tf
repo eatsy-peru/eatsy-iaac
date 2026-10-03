@@ -38,6 +38,36 @@ variable "deployment_subscription_id" {
   type        = string
 }
 
+variable "control_plane_enabled" {
+  description = "Create the Deployment Control Plane Static Web App (Free) and push its deployment token to the control plane repo. Enable in a single environment only (prd)."
+  type        = bool
+  default     = false
+}
+
+variable "control_plane_repository_name" {
+  description = "GitHub repository of the Deployment Control Plane; receives the Static Web App deployment token as AZURE_STATIC_WEB_APPS_API_TOKEN"
+  type        = string
+  default     = "eatsy-deployment-control-plane"
+}
+
+variable "control_plane_github_app_id" {
+  description = "App ID of the control plane's GitHub App. Leave empty until the App exists; the private key is set outside Terraform."
+  type        = string
+  default     = ""
+}
+
+variable "control_plane_github_installation_id" {
+  description = "Installation ID of the control plane's GitHub App on the managed repositories. Leave empty until the App is installed."
+  type        = string
+  default     = ""
+}
+
+variable "control_plane_allowed_github_users" {
+  description = "Comma-separated GitHub logins allowed to use the control plane (empty means nobody)"
+  type        = string
+  default     = ""
+}
+
 ###################################################
 # LOCALS
 ###################################################

@@ -136,7 +136,9 @@ resource "azuread_directory_role" "application_administrator" {
 }
 
 resource "azuread_directory_role_assignment" "github_oidc_app_admin" {
-  role_id             = azuread_directory_role.application_administrator.object_id
+  # template_id, not object_id: the API stores the role template id, so object_id made
+  # every plan show a forced replacement of this assignment.
+  role_id             = azuread_directory_role.application_administrator.template_id
   principal_object_id = azuread_service_principal.github_oidc.object_id
 }
 

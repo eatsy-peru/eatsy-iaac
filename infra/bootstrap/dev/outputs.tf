@@ -48,6 +48,16 @@ output "service_principal_id" {
   value       = module.bootstrap.service_principal_id
 }
 
+output "control_plane_static_web_app_name" {
+  description = "The name of the Deployment Control Plane Static Web App (null when disabled)"
+  value       = module.bootstrap.control_plane_static_web_app_name
+}
+
+output "control_plane_static_web_app_hostname" {
+  description = "The default hostname of the Deployment Control Plane Static Web App (null when disabled)"
+  value       = module.bootstrap.control_plane_static_web_app_hostname
+}
+
 output "federated_credentials" {
   description = "Map of created federated credentials"
   value       = module.bootstrap.federated_credentials

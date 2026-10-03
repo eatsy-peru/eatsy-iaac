@@ -5,6 +5,7 @@ This repository manages the bootstrap infrastructure for Eatsy's Infrastructure-
 - **Key Vault**: Container-level management only (secrets are managed by other repositories)
 - **Storage Account**: For Terraform state storage, container-level management only (blobs managed elsewhere)
 - **Managed Identity**: Azure AD application, service principal, and federated credentials for GitHub Actions OIDC authentication
+- **Deployment Control Plane Static Web App** (optional, prd only): the Free-plan Static Web App that hosts `eatsy-deployment-control-plane`, see below
 
 ## Scope
 
@@ -132,6 +133,34 @@ The service principal automatically gets these roles:
 - **Key Vault Secrets User** on the IAAC Key Vault
 - **Storage Blob Data Contributor** on the tfstate storage account
 - **Directory Readers** on the Entra ID directory
+
+## Deployment Control Plane Static Web App
+
+`modules/bootstrap/static-web-app.tf` creates `ASTW01<LOC><APP><ENV>` (for example
+`ASTW01EU2IAACPRD`) in the bootstrap resource group on the **Free** plan, and
+`github_secrets.tf` pushes its deployment token to the `eatsy-deployment-control-plane`
+repo as `AZURE_STATIC_WEB_APPS_API_TOKEN`. It is controlled by `control_plane_enabled`
+(default `false`; set to `true` only in `infra/bootstrap/prd/terraform.tfvars`, because
+one instance manages both dev and prd).
+
+| Variable | Where | Meaning |
+|---|---|---|
+| `control_plane_enabled` | `prd/terraform.tfvars` | Create the Static Web App and the token secret |
+| `control_plane_repository_name` | `common.tfvars` | Repo that receives the token |
+| `control_plane_allowed_github_users` | `prd/terraform.tfvars` | Comma-separated GitHub logins allowed in (empty = nobody) |
+| `control_plane_github_app_id`, `control_plane_github_installation_id` | `prd/terraform.tfvars` | From the control plane's GitHub App; empty on the first apply |
+
+Order of operations:
+
+1. Apply `infra/bootstrap/prd` with the IDs empty. This creates the Static Web App and the repo secret.
+2. Create and install the GitHub App (`eatsy-deployment-control-plane/docs/setup.md`, steps 2-4).
+3. Put the App ID, installation ID and your GitHub login in `prd/terraform.tfvars` and apply again. Do not put them in `common.tfvars`: it is passed with `--var-file`, which overrides `terraform.tfvars`.
+4. Set `GITHUB_APP_PRIVATE_KEY` with `az staticwebapp appsettings set` (setup.md step 8). The key is deliberately not in Terraform or its state; `ignore_changes` stops Terraform from removing it.
+
+The GitHub provider token (`GITHUB_TOKEN`) used for the bootstrap needs admin access to the
+control plane repo, like it does for the other repos receiving secrets. The Static Web App
+is created in the IAAC subscription by whoever applies the bootstrap (the operator, as for
+the rest of this configuration).
 
 ## Important Notes
 

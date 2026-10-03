@@ -42,3 +42,33 @@ variable "deployment_subscription_id" {
   description = "Subscription ID where eatsy-azure-terraform's actual infrastructure is deployed (Subscription B)"
   type        = string
 }
+
+variable "control_plane_enabled" {
+  description = "Create the Deployment Control Plane Static Web App (enable in prd only)"
+  type        = bool
+  default     = false
+}
+
+variable "control_plane_repository_name" {
+  description = "GitHub repository of the Deployment Control Plane"
+  type        = string
+  default     = "eatsy-deployment-control-plane"
+}
+
+variable "control_plane_github_app_id" {
+  description = "App ID of the control plane's GitHub App (empty until it exists)"
+  type        = string
+  default     = ""
+}
+
+variable "control_plane_github_installation_id" {
+  description = "Installation ID of the control plane's GitHub App (empty until installed)"
+  type        = string
+  default     = ""
+}
+
+variable "control_plane_allowed_github_users" {
+  description = "Comma-separated GitHub logins allowed to use the control plane"
+  type        = string
+  default     = ""
+}

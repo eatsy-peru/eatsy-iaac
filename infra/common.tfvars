@@ -33,3 +33,10 @@ github_repository_names = [
   "eatsy-iaac"
   # Add other repositories that need federated credentials
 ]
+
+#################################################
+# 5. DEPLOYMENT CONTROL PLANE (COMMON)
+#################################################
+# The Static Web App itself is enabled per environment (prd/terraform.tfvars). These
+# values do not depend on the environment.
+control_plane_repository_name = "eatsy-deployment-control-plane"

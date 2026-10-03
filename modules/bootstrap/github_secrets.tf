@@ -17,6 +17,11 @@
  * 3. BOOTSTRAP-ONLY SECRETS (pushed only to eatsy-iaac repo)
  *    - IAAC_KEY_VAULT_NAME (for bootstrap KV access)
  *    - IAAC_CERTS_STORAGE_ACCOUNT_NAME (for certificate blob storage)
+ *
+ * 4. CONTROL PLANE SECRET (only when control_plane_enabled; pushed only to the
+ *    control plane repo, which deploys itself with a plain Static Web Apps token
+ *    and does not use the OIDC identity)
+ *    - AZURE_STATIC_WEB_APPS_API_TOKEN
  */
 
 locals {
@@ -88,4 +93,16 @@ resource "github_actions_environment_secret" "certs_storage_account_name" {
   environment = each.value.environment
   secret_name = "IAAC_CERTS_STORAGE_ACCOUNT_NAME"
   value       = azurerm_storage_account.tfstate.name
+}
+
+#################################################
+# CONTROL PLANE SECRET (control plane repo only)
+#################################################
+
+# Push the Static Web App deployment token as a repository secret
+resource "github_actions_secret" "control_plane_swa_token" {
+  count       = var.control_plane_enabled ? 1 : 0
+  repository  = var.control_plane_repository_name
+  secret_name = "AZURE_STATIC_WEB_APPS_API_TOKEN"
+  value       = azurerm_static_web_app.control_plane[0].api_key
 }

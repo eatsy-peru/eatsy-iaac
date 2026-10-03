@@ -62,6 +62,17 @@ output "service_principal_id" {
   value       = azuread_service_principal.github_oidc.id
 }
 
+# Control plane Static Web App Outputs (null when control_plane_enabled is false)
+output "control_plane_static_web_app_name" {
+  description = "The name of the Deployment Control Plane Static Web App"
+  value       = one(azurerm_static_web_app.control_plane[*].name)
+}
+
+output "control_plane_static_web_app_hostname" {
+  description = "The default hostname of the Deployment Control Plane Static Web App"
+  value       = one(azurerm_static_web_app.control_plane[*].default_host_name)
+}
+
 output "federated_credentials" {
   description = "Map of created federated credentials"
   value = {
