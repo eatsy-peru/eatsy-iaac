@@ -1,30 +1,23 @@
 # Production Bootstrap Configuration
+# deployment_subscription_id and github_repository_names are shared across dev/prd
+# and live in ../../common.tfvars.
 
-app_code   = "IAAC"
 environment = "PRD"
-location   = "East US 2"
-location_short = "EU2"
-subscription_id = "9a1cfce6-9caa-4bf2-8b7c-0ceaf0ddb179"
-
-# GitHub configuration
-github_owner = "eatsy-peru"
-github_repository_names = [
-  "eatsy-azure-terraform",
-  "eatsy-iaac"
-  # Add other repositories that need federated credentials
-]
 
 github_oidc_environments = ["prd"]
 
-/*
-cd infra/bootstrap/prd
+# The Deployment Control Plane manages dev and prd, so a single Static Web App is
+# enough. It is created by the prd bootstrap only.
+control_plane_enabled = true
 
-# Import Resource Group
-terraform import module.bootstrap.azurerm_resource_group.main_rg /subscriptions/9a1cfce6-9caa-4bf2-8b7c-0ceaf0ddb179/resourceGroups/RSGR01EU2IAACPRD
+#### Ran a second time after creating the GitHub App
 
-# Import Key Vault
-terraform import module.bootstrap.azurerm_key_vault.iaac /subscriptions/9a1cfce6-9caa-4bf2-8b7c-0ceaf0ddb179/resourceGroups/RSGR01EU2IAACPRD/providers/Microsoft.KeyVault/vaults/AKVT01EU2IAACPRD
+# Comma-separated GitHub logins allowed to sign in. Empty means nobody can use the
+# control plane, so set your login before the first real use.
+control_plane_allowed_github_users   = "gdpc215"
 
-# Import Storage Account
-terraform import module.bootstrap.azurerm_storage_account.tfstate /subscriptions/9a1cfce6-9caa-4bf2-8b7c-0ceaf0ddb179/resourceGroups/RSGR01EU2IAACPRD/providers/Microsoft.Storage/storageAccounts/stac01eu2iaacprd
-*/
+# From the GitHub App created for the control plane (see the control plane repo's
+# docs/setup.md). Leave empty on the first apply, fill in after creating/installing
+# the App, then apply again. The App's private key is NOT set here.
+control_plane_github_app_id          = "5171449"
+control_plane_github_installation_id = "167408659"

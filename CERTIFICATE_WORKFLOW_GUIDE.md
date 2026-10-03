@@ -9,15 +9,15 @@ This guide explains how to use the GitHub Actions workflow to create certificate
 The workflow requires these secrets to be set in the **`eatsy-iaac` repository** as **environment secrets** (per `dev` / `prd` environment):
 
 **Required for this workflow:**
-- **`KEY_VAULT_NAME`**: The bootstrap Key Vault name for storing certificate secrets
-- **`CERTS_STORAGE_ACCOUNT_NAME`**: The storage account name for certificate blob storage
+- **`IAAC_KEY_VAULT_NAME`**: The bootstrap Key Vault name for storing certificate secrets
+- **`IAAC_CERTS_STORAGE_ACCOUNT_NAME`**: The storage account name for certificate blob storage
 - **`AZURE_TENANT_ID`**: Your Azure tenant ID (used for OIDC login)
-- **`AZURE_CLIENT_ID`**: The GitHub OIDC service principal client ID (used for OIDC login)
-- **`AZURE_SUBSCRIPTION_ID`**: Your Azure subscription ID (used for OIDC login)
+- **`AZURE_IAAC_CLIENT_ID`**: The GitHub OIDC service principal client ID (used for OIDC login)
+- **`AZURE_IAAC_SUBSCRIPTION_ID`**: Your Azure subscription ID (used for OIDC login)
 
 These are **automatically created by Terraform** when you deploy the bootstrap module (`terraform apply` in `infra/bootstrap/{dev,prd}`). No manual configuration needed!
 
-Note: The `KEY_VAULT_NAME` and `CERTS_STORAGE_ACCOUNT_NAME` secrets are **only pushed to the `eatsy-iaac` repo** — they are bootstrap infrastructure secrets and not shared with other repositories.
+Note: The `IAAC_KEY_VAULT_NAME` and `IAAC_CERTS_STORAGE_ACCOUNT_NAME` secrets are **only pushed to the `eatsy-iaac` repo** — they are bootstrap infrastructure secrets and not shared with other repositories.
 
 ### 2. Azure Configuration
 
@@ -116,7 +116,7 @@ After the workflow completes successfully:
    - Authenticates to Azure using OIDC federated identity (no credentials needed!)
 
 ### 2. **Store secrets in variables**
-   - Reads `KEY_VAULT_NAME` and `CERTS_STORAGE_ACCOUNT_NAME` from GitHub environment secrets
+   - Reads `IAAC_KEY_VAULT_NAME` and `IAAC_CERTS_STORAGE_ACCOUNT_NAME` from GitHub environment secrets
    - These are automatically set by Terraform when you deploy the bootstrap
    - Validates both are configured (exits if missing)
 
@@ -134,7 +134,7 @@ After the workflow completes successfully:
    - Key Vault secret values have size limits (~80KB), but base64 is standard for binary data
 
 ### 6. **Key Vault Storage**
-   - Uses the `KEY_VAULT_NAME` secret to reference the correct Key Vault
+   - Uses the `IAAC_KEY_VAULT_NAME` secret to reference the correct Key Vault
    - Creates four secrets with the specified prefix
 
 ### 7. **Delete Certificate Files from Blob Storage** (optional, enabled by default)
@@ -183,7 +183,7 @@ echo "$PEM_B64" | base64 -d > certificate.pem
 
 ## Troubleshooting
 
-### "KEY_VAULT_NAME secret not configured" or "CERTS_STORAGE_ACCOUNT_NAME secret not configured"
+### "IAAC_KEY_VAULT_NAME secret not configured" or "IAAC_IAAC_CERTS_STORAGE_ACCOUNT_NAME secret not configured"
 - Verify you've deployed the bootstrap Terraform stack: `cd infra/bootstrap/{dev,prd} && terraform apply`
 - Confirm you set `GITHUB_TOKEN` environment variable when running Terraform (needed for `github_actions_environment_secret` resources)
 - Check GitHub UI: Repo Settings → Environments → {dev,prd} → Secrets to verify they were created
@@ -203,7 +203,7 @@ echo "$PEM_B64" | base64 -d > certificate.pem
 - Check that the Key Vault has the correct `Environment` tag
 
 ### "Azure login failed"
-- Verify `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, and `AZURE_SUBSCRIPTION_ID` are set correctly
+- Verify `AZURE_TENANT_ID`, `AZURE_IAAC_CLIENT_ID`, and `AZURE_IAAC_SUBSCRIPTION_ID` are set correctly
 - Confirm the GitHub OIDC credential is configured for this repository
 - Check that the service principal has "Key Vault Secrets Officer" role
 

@@ -115,9 +115,9 @@ This document explains how the eatsy-iaac bootstrap integrates with the eatsy-az
    ```yaml
    - uses: azure/login@v1
      with:
-       client-id: ${{ secrets.AZURE_CLIENT_ID }}
+       client-id: ${{ secrets.AZURE_IAAC_CLIENT_ID }}
        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-       subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+       subscription-id: ${{ secrets.AZURE_IAAC_SUBSCRIPTION_ID }}
    ```
 3. Service principal reads from:
    - Key Vault (for secrets)
@@ -159,15 +159,15 @@ This document explains how the eatsy-iaac bootstrap integrates with the eatsy-az
 
 ## GitHub Secrets Configuration
 
-GitHub Actions secrets are **automatically managed by Terraform**. When you deploy the bootstrap in `eatsy-iaac`, the `github_actions_environment_secret` resources automatically create these secrets, scoped to the appropriate environment (`dev` or `prd`):
+GitHub Actions secrets are **automatically managed by Terraform**. When you deploy the bootstrap in `eatsy-iaac`, the `github_actions_secret` and `github_actions_environment_secret` resources automatically create these secrets:
 
-| Secret | Repositories | Managed By | Purpose |
-|--------|-------------|-----------|---------|
-| `AZURE_CLIENT_ID` | eatsy-iaac, eatsy-azure-terraform | `modules/bootstrap/github_secrets.tf` | OIDC login for both repos |
-| `AZURE_TENANT_ID` | eatsy-iaac, eatsy-azure-terraform | `modules/bootstrap/github_secrets.tf` | OIDC login for both repos |
-| `AZURE_SUBSCRIPTION_ID` | eatsy-iaac, eatsy-azure-terraform | `modules/bootstrap/github_secrets.tf` | OIDC login for both repos |
-| `KEY_VAULT_NAME` | **eatsy-iaac only** | `modules/bootstrap/github_secrets.tf` | Bootstrap Key Vault access |
-| `CERTS_STORAGE_ACCOUNT_NAME` | **eatsy-iaac only** | `modules/bootstrap/github_secrets.tf` | Certificate blob storage access |
+| Secret | Repositories | Scope | Managed By | Purpose |
+|--------|-------------|-------|-----------|---------|
+| `AZURE_TENANT_ID` | eatsy-iaac, eatsy-azure-terraform | Repository (global — same value for dev and prd) | `modules/bootstrap/github_secrets.tf` | OIDC login for both repos |
+| `AZURE_IAAC_SUBSCRIPTION_ID` | eatsy-iaac, eatsy-azure-terraform | Repository (global — same value for dev and prd) | `modules/bootstrap/github_secrets.tf` | OIDC login for both repos |
+| `AZURE_IAAC_CLIENT_ID` | eatsy-iaac, eatsy-azure-terraform | Environment (`dev`/`prd` — differs per environment) | `modules/bootstrap/github_secrets.tf` | OIDC login for both repos |
+| `IAAC_KEY_VAULT_NAME` | **eatsy-iaac only** | Environment (`dev`/`prd`) | `modules/bootstrap/github_secrets.tf` | Bootstrap Key Vault access |
+| `IAAC_CERTS_STORAGE_ACCOUNT_NAME` | **eatsy-iaac only** | Environment (`dev`/`prd`) | `modules/bootstrap/github_secrets.tf` | Certificate blob storage access |
 
 **No manual setup required** — just run `terraform apply` in the bootstrap stack and the secrets are pushed automatically.
 
@@ -196,9 +196,9 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-id: ${{ secrets.AZURE_IAAC_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          subscription-id: ${{ secrets.AZURE_IAAC_SUBSCRIPTION_ID }}
       
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
